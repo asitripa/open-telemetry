@@ -35,10 +35,11 @@ exporters:
     namespace: otel
     const_labels:
       via: collector
-  jaeger:
-    endpoint: jaeger:14250
-    tls:
-      insecure: true
+
+  #  jaeger:
+    # endpoint: "docker:16686"
+    #  tls:
+      # insecure: true
 
 extensions:
   health_check:
@@ -46,10 +47,10 @@ extensions:
 service:
   extensions: [health_check]
   pipelines:
-    traces:
-      receivers: [otlp]
-      processors: [batch, resource]
-      exporters: [jaeger]
+    # traces:
+    #   receivers: [otlp]
+    #   processors: [batch,resource]
+    #   exporters: [jaeger]
     metrics:
       receivers: [otlp]
       processors: [batch]

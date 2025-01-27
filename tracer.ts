@@ -5,71 +5,123 @@ import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { Resource } from '@opentelemetry/resources';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
-import { ParentBasedSampler, TraceIdRatioBasedSampler } from '@opentelemetry/sdk-trace-base'
+import { ParentBasedSampler } from '@opentelemetry/sdk-trace-base';
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
 import { OurSampler } from './ourSampler';
-import {W3CBaggagePropagator, W3CTraceContextPropagator, CompositePropagator} from '@opentelemetry/core'
-import { OTLPMetricExporter} from '@opentelemetry/exporter-metrics-otlp-proto'
+import { W3CBaggagePropagator, W3CTraceContextPropagator, CompositePropagator } from '@opentelemetry/core';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto';
+import { metrics } from '@opentelemetry/api';
 
 function start(serviceName: string) {
+    const resource = new Resource({
+        [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
+        'team.owner': 'Ashish',
+        'deployment': '4',
+    });
 
-    const { endpoint, port } = PrometheusExporter.DEFAULT_OPTIONS;
-    // const exporter = new PrometheusExporter({}, () => {
-    //     console.log(
-    //         `prometheus scrape endpoint: http://localhost:${port}${endpoint}`,
-    //     );
-    // });
-    const meterProvider = new MeterProvider({
-        resource: new Resource({
-            [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
-        }),
-    }); 
+    // ✅ Prometheus Exporter
+    const prometheusExporter = new PrometheusExporter(
+        { port: 9494 },
+        () => console.log(`Prometheus scrape endpoint: http://localhost:9494/metrics`)
+    );
+
+    // ✅ OTLP Metrics Exporter
+    const metricExporter = new OTLPMetricExporter({
+        url: 'http://collector:4318/v1/metrics',
+    });
+
+    // ✅ Metric Reader Setup
     const metricReader = new PeriodicExportingMetricReader({
-        exporter: new OTLPMetricExporter({
-            url:'http://collector:4318/v1/metrics'
-        })
-    })
+        exporter: metricExporter,
+        exportIntervalMillis: 60000,
+        exportTimeoutMillis: 30000,
+    });
+
+    // ✅ Create Meter Provider and register it globally
+    const meterProvider = new MeterProvider({ resource });
     meterProvider.addMetricReader(metricReader);
-    const meter = meterProvider.getMeter('my-service-meter');
+    meterProvider.addMetricReader(prometheusExporter);
+    metrics.setGlobalMeterProvider(meterProvider);
 
-    const traceExporter = new OTLPTraceExporter({
-        url: 'http://collector:4318/v1/traces',
+    const meter = meterProvider.getMeter(serviceName);
+
+    // ✅ Define Application Metrics
+    const httpCalls = meter.createHistogram('http_calls', { description: 'Tracks HTTP request duration' });
+    const redisCalls = meter.createHistogram('redis_calls', { description: 'Tracks Redis call duration' });
+    const errorCount = meter.createCounter('error_count', { description: 'Counts application errors' });
+
+    // Span duration metrics (added for Prometheus)
+    const spanDuration = meter.createHistogram('span_duration_seconds', {
+        description: 'Tracks span duration in seconds',
     });
 
+    // Span error metrics (added for Prometheus)
+    const spanErrorCount = meter.createCounter('span_error_count', {
+        description: 'Counts the number of errors in spans',
+    });
+
+    function trackHttpRequest(duration: number, route?: string, status?: number, method?: string) {
+        httpCalls.record(duration, { route, status, method });
+    }
+
+    function trackRedisCall(duration: number, operation: string) {
+        redisCalls.record(duration, { operation });
+    }
+
+    function trackError(method?: string, route?: string) {
+        errorCount.add(1, { method, route });
+    }
+
+    // Function to track span duration
+    function trackSpanDuration(spanName: string, duration: number) {
+        spanDuration.record(duration, { span_name: spanName });
+    }
+
+    // Function to track span errors
+    function trackSpanError(spanName: string, error: Error) {
+        spanErrorCount.add(1, { span_name: spanName, error_message: error.message });
+    }
+
+    // ✅ Trace Exporter
+    const traceExporter = new OTLPTraceExporter({ url: 'http://jaeger:4318/v1/traces' });
+
+    // ✅ Span Processor
+    const spanProcessor = new BatchSpanProcessor(traceExporter);
+
+    // ✅ OpenTelemetry SDK Configuration
     const sdk = new NodeSDK({
-        traceExporter,
-        serviceName: serviceName,
-        instrumentations: [getNodeAutoInstrumentations({
-            "@opentelemetry/instrumentation-fs":{
-                enabled:false
-            },
-            "@opentelemetry/instrumentation-http":{
-                headersToSpanAttributes:{
-                    client:{
-                        requestHeaders:['tracestate','traceparent','baggage']
+        resource,
+        instrumentations: [
+            getNodeAutoInstrumentations({
+                "@opentelemetry/instrumentation-fs": { enabled: true },
+                "@opentelemetry/instrumentation-http": {
+                    headersToSpanAttributes: {
+                        client: { requestHeaders: ['tracestate', 'traceparent', 'baggage'] },
+                        server: { requestHeaders: ['tracestate', 'traceparent', 'baggage'] },
                     },
-                    server:{
-                        requestHeaders:['tracestate','traceparent','baggage']
-                    }
-                }
-            }
-        })],
-        autoDetectResources:true,
-        resource: new Resource({
-            'team.owner':'core-team',
-            'deployment':'4'
-        }),
-        sampler: new ParentBasedSampler({
-            root: new OurSampler()
-        }),
+                },
+                "@opentelemetry/instrumentation-express": { enabled: true },
+            }),
+        ],
+        traceExporter,
+        spanProcessors: [spanProcessor],
+        autoDetectResources: true,
+        sampler: new ParentBasedSampler({ root: new OurSampler() }),
         textMapPropagator: new CompositePropagator({
-            propagators:[new W3CTraceContextPropagator(), new W3CBaggagePropagator()]
-        })
-
+            propagators: [new W3CTraceContextPropagator(), new W3CBaggagePropagator()],
+        }),
     });
 
-    sdk.start();
+    // ✅ Start SDK with error handling in try-catch block
+    try {
+        sdk.start();
+        console.log('OpenTelemetry SDK started successfully');
+    } catch (error) {
+        console.error('Error starting OpenTelemetry SDK:', error);
+    }
 
-    return meter;
+    // Return metrics tracking functions
+    return { meter, trackHttpRequest, trackRedisCall, trackError, trackSpanDuration, trackSpanError };
 }
 
-export default start
+export default start;
