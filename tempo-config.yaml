@@ -1,0 +1,29 @@
+server:
+  http_listen_port: 3200
+  grpc_listen_port: 4317
+
+metrics:
+  # Enable Prometheus metrics generation
+  prometheus:
+    endpoint: ":9090"  # Expose metrics endpoint
+    namespace: tempo
+
+service:
+  pipelines:
+    traces:
+      # Specify the pipeline for tracing
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [tempo]
+
+# Tempo storage and trace exporter configurations
+storage:
+  trace:
+    backend: "local"
+    path: "/tmp/tempo"
+
+# Optional - Enable service graph visualization support
+service_graph:
+  enabled: true
+  prom_metrics: true  # Enable integration with Prometheus metrics for service graph
+  prom_url: "http://prometheus:9090"  # Link to your Prometheus data source

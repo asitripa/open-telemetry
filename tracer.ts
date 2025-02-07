@@ -83,8 +83,10 @@ function start(serviceName: string) {
     }
 
     // ✅ Trace Exporter
-    const traceExporter = new OTLPTraceExporter({ url: 'http://jaeger:4318/v1/traces' });
-
+    const traceExporter = new OTLPTraceExporter({
+        url: 'http://collector:4318/v1/traces',  // gRPC endpoint of your collector (without SSL)
+      });
+      
     // ✅ Span Processor
     const spanProcessor = new BatchSpanProcessor(traceExporter);
 

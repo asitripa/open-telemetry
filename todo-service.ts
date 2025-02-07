@@ -10,7 +10,7 @@ const app = express();
 const redis = new Redis({ host: 'redis' });
 
 // ✅ Initialize OpenTelemetry
-const { meter, trackHttpRequest, trackRedisCall, trackError } = start('todo-service');
+const { meter, trackHttpRequest, trackRedisCall, trackError, trackSpanDuration, trackSpanError } = start('todo-service');
 
 // ✅ Track HTTP Requests
 app.use((req, res, next) => {
@@ -36,6 +36,7 @@ const sleep = (time: number) => new Promise(resolve => setTimeout(resolve, time)
 async function trackInternalApiCall(url: string, method: string, baggage: any) {
     const tracer = opentelemetry.trace.getTracer('internal-api-calls');
     const span = tracer.startSpan(`Internal API Call: ${url}`);
+    const startTime = Date.now();
 
     try {
         // Inject trace context (traceparent, baggage) into headers
@@ -49,16 +50,23 @@ async function trackInternalApiCall(url: string, method: string, baggage: any) {
             headers,
         });
 
+        // ✅ Fix: Use traceId instead of span.name
+        const spanName = span.spanContext().traceId || 'unknown-span';
+        trackSpanDuration(spanName, (Date.now() - startTime) / 1000);
+
         // Record status and attributes for the span
         span.setAttribute('http.status_code', response.status);
         span.setAttribute('http.method', method);
         span.setAttribute('http.url', url);
         return response;
     } catch (error: unknown) {
-        // Capture error details in the span
         if (error instanceof Error) {
             span.recordException(error);
             span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
+
+            // ✅ Fix: Use traceId instead of span.name
+            const spanName = span.spanContext().traceId || 'unknown-span';
+            trackSpanError(spanName, error);
         }
         throw error;
     } finally {
@@ -79,8 +87,8 @@ app.get('/todos', async (req, res) => {
             // ✅ Track internal API call to 'auth' service
             const userResponse = await trackInternalApiCall('http://auth:8080/auth', 'GET', baggage);
 
-            // Track Redis calls (as before)
-            const startRedisTime = Date.now(); // Define this variable here
+            // ✅ Track Redis calls properly
+            const startRedisTime = Date.now();
             const todoKeys = await redis.keys('todo:*');
             trackRedisCall(Date.now() - startRedisTime, 'keys');
 
@@ -92,10 +100,10 @@ app.get('/todos', async (req, res) => {
                 if (todoItem) todos.push(JSON.parse(todoItem));
             }
 
-            // Simulate slow response if `slow` query parameter is passed
+            // ✅ Simulate slow response if `slow` query parameter is passed
             if (req.query['slow']) await sleep(5000);
 
-            // Handle failure simulation if `fail` query parameter is passed
+            // ✅ Handle failure simulation if `fail` query parameter is passed
             if (req.query['fail']) {
                 try {
                     throw new Error('Really bad error!');
@@ -110,16 +118,16 @@ app.get('/todos', async (req, res) => {
                 }
             }
 
-            // Return the list of todos and user data
+            // ✅ Return the list of todos and user data
             res.json({ todos, user: userResponse.data });
         } catch (error) {
-            // Handle errors from internal API calls
+            // ✅ Handle errors from internal API calls
             res.status(500).json({ error: 'Internal Server Error' });
         }
     });
 });
 
-// Start the Express server
+// ✅ Start the Express server
 app.listen(8080, () => {
     console.log('Service is up and running!');
 });

@@ -10,24 +10,19 @@ processors:
   batch:
   resource:
     attributes:
-    - key: key.test
-      value: "via-collector"
-      action: insert
+      - key: key.test
+        value: "via-collector"
+        action: insert
   tail_sampling:
     decision_wait: 10s
     policies:
-      [
-          {
-            name: high-latency,
-            type: latency,
-            latency: {threshold_ms: 500}
-          },
-          {
-            name: http_error_only,
-            type: numeric_attribute,
-            numeric_attribute: {key: http.status_code, min_value: 500, max_value: 599}
-          }
-      ]
+      - name: high-latency
+        type: latency
+        latency: {threshold_ms: 500}
+      - name: http_error_only
+        type: numeric_attribute
+        numeric_attribute: {key: http.status_code, min_value: 500, max_value: 599}
+
 exporters:
   prometheus:
     endpoint: "0.0.0.0:8889"
@@ -35,11 +30,12 @@ exporters:
     namespace: otel
     const_labels:
       via: collector
-
-  #  jaeger:
-    # endpoint: "docker:16686"
-    #  tls:
-      # insecure: true
+  otlp:
+    endpoint: "http://tempo:4317"  # Sending traces to Tempo (OTLP-compatible)
+    tls:
+      insecure: true  # Disabling TLS (insecure connection)
+  # zipkin:
+    # endpoint: "http://jaeger:14268/api/traces"  # Jaeger's Zipkin-compatible HTTP endpoint
 
 extensions:
   health_check:
@@ -47,10 +43,10 @@ extensions:
 service:
   extensions: [health_check]
   pipelines:
-    # traces:
-    #   receivers: [otlp]
-    #   processors: [batch,resource]
-    #   exporters: [jaeger]
+    traces:
+      receivers: [otlp]
+      processors: [batch, resource, tail_sampling]
+      exporters: [otlp]  # Exporting traces to OTLP (Tempo) and Zipkin (Jaeger)
     metrics:
       receivers: [otlp]
       processors: [batch]
