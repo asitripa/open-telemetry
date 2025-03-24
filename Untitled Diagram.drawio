@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0" version="26.0.5">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0" version="26.1.1">
   <diagram name="Page-1" id="ALjO8eT-gk-QnNklpEta">
-    <mxGraphModel dx="2109" dy="621" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" background="#66FFFF" math="0" shadow="0">
+    <mxGraphModel dx="2109" dy="657" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" background="#9AC7BF" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -118,7 +118,7 @@
             <mxRectangle width="130" height="32" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="VGGrf39JVPqZf-1prJT_-106" value="Splunk" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;" parent="VGGrf39JVPqZf-1prJT_-104" vertex="1">
+        <mxCell id="VGGrf39JVPqZf-1prJT_-106" value="Pyroscope" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;" parent="VGGrf39JVPqZf-1prJT_-104" vertex="1">
           <mxGeometry x="130" width="129" height="32" as="geometry">
             <mxRectangle width="129" height="32" as="alternateBounds" />
           </mxGeometry>
@@ -131,7 +131,7 @@
             <mxRectangle width="130" height="20" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="VGGrf39JVPqZf-1prJT_-109" value="" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;" parent="VGGrf39JVPqZf-1prJT_-107" vertex="1">
+        <mxCell id="VGGrf39JVPqZf-1prJT_-109" value="Splunk" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;" parent="VGGrf39JVPqZf-1prJT_-107" vertex="1">
           <mxGeometry x="130" width="129" height="20" as="geometry">
             <mxRectangle width="129" height="20" as="alternateBounds" />
           </mxGeometry>
@@ -143,7 +143,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="VGGrf39JVPqZf-1prJT_-8" value="&lt;b&gt;OTEL collector&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;shadow=1;strokeColor=#FF0080;" parent="1" vertex="1">
-          <mxGeometry x="31" y="448" width="86" height="342" as="geometry" />
+          <mxGeometry x="32" y="454.5" width="86" height="342" as="geometry" />
         </mxCell>
         <mxCell id="VGGrf39JVPqZf-1prJT_-114" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;" parent="1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
@@ -195,6 +195,57 @@
         </mxCell>
         <mxCell id="VGGrf39JVPqZf-1prJT_-155" style="edgeStyle=orthogonalEdgeStyle;shape=flexArrow;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.047;entryY=0.479;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="VGGrf39JVPqZf-1prJT_-1" target="VGGrf39JVPqZf-1prJT_-8" edge="1">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6vMMv0Z0kBraqcEFBc6I-1" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;fontSize=12;startSize=8;endSize=8;curved=1;" edge="1" parent="1">
+          <mxGeometry width="120" relative="1" as="geometry">
+            <mxPoint x="-126" y="665" as="sourcePoint" />
+            <mxPoint x="-128" y="907" as="targetPoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6vMMv0Z0kBraqcEFBc6I-2" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;fontSize=12;startSize=8;endSize=8;curved=1;" edge="1" parent="1">
+          <mxGeometry width="120" relative="1" as="geometry">
+            <mxPoint x="-127.5" y="906" as="sourcePoint" />
+            <mxPoint x="237" y="902" as="targetPoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6vMMv0Z0kBraqcEFBc6I-3" value="" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="232" y="855" width="80" height="142" as="geometry" />
+        </mxCell>
+        <mxCell id="6vMMv0Z0kBraqcEFBc6I-4" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;fontSize=12;startSize=8;endSize=8;curved=1;" edge="1" parent="1">
+          <mxGeometry width="120" relative="1" as="geometry">
+            <mxPoint x="310" y="903" as="sourcePoint" />
+            <mxPoint x="411" y="658" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="379" y="905" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6vMMv0Z0kBraqcEFBc6I-5" value="Pyroscope" style="text;strokeColor=none;fillColor=none;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="244" y="908" width="55" height="31" as="geometry" />
+        </mxCell>
+        <mxCell id="6vMMv0Z0kBraqcEFBc6I-6" value="App profiling-Direct deployment" style="text;strokeColor=none;fillColor=none;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="-64" y="868" width="218" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="6vMMv0Z0kBraqcEFBc6I-8" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;fontSize=12;startSize=8;endSize=8;" edge="1" parent="1" source="6vMMv0Z0kBraqcEFBc6I-6" target="6vMMv0Z0kBraqcEFBc6I-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6vMMv0Z0kBraqcEFBc6I-9" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;fontSize=12;startSize=8;endSize=8;curved=1;" edge="1" parent="1">
+          <mxGeometry width="120" relative="1" as="geometry">
+            <mxPoint x="509" y="830.33" as="sourcePoint" />
+            <mxPoint x="509" y="931" as="targetPoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6vMMv0Z0kBraqcEFBc6I-12" value="Alerting Manager" style="text;strokeColor=none;fillColor=none;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="495" y="939" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="6vMMv0Z0kBraqcEFBc6I-13" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="440.87" y="928" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="6vMMv0Z0kBraqcEFBc6I-15" value="Alerting manager/centralized team" style="text;strokeColor=none;fillColor=none;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="483" y="953" width="60" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
