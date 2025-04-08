@@ -1,29 +1,26 @@
 server:
   http_listen_port: 3200
-  grpc_listen_port: 4317
 
-metrics:
-  # Enable Prometheus metrics generation
-  prometheus:
-    endpoint: ":9090"  # Expose metrics endpoint
-    namespace: tempo
+query_frontend:
+  max_outstanding_per_tenant: 1000
 
-service:
-  pipelines:
-    traces:
-      # Specify the pipeline for tracing
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [tempo]
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: "tempo:4317"
+        http:
+          endpoint: "tempo:4318"
+    jaeger:
+      protocols:
+        grpc:
+        thrift_http:
+        thrift_compact:
+        thrift_binary:
 
-# Tempo storage and trace exporter configurations
 storage:
   trace:
-    backend: "local"
-    path: "/tmp/tempo"
-
-# Optional - Enable service graph visualization support
-service_graph:
-  enabled: true
-  prom_metrics: true  # Enable integration with Prometheus metrics for service graph
-  prom_url: "http://prometheus:9090"  # Link to your Prometheus data source
+    backend: local
+    local:
+      path: /var/tempo/traces

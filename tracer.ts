@@ -11,6 +11,7 @@ import { OurSampler } from './ourSampler';
 import { W3CBaggagePropagator, W3CTraceContextPropagator, CompositePropagator } from '@opentelemetry/core';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto';
 import { metrics } from '@opentelemetry/api';
+import pyroscope from "@pyroscope/nodejs";
 
 function start(serviceName: string) {
     const resource = new Resource({
@@ -18,6 +19,15 @@ function start(serviceName: string) {
         'team.owner': 'Ashish',
         'deployment': '4',
     });
+
+    // ✅ Initialize Pyroscope
+    pyroscope.init({
+        appName: "todo-app",
+        serverAddress: "http://pyroscope:4040",
+    });
+
+    // ✅ Start Pyroscope Globally
+    pyroscope.start();
 
     // ✅ Prometheus Exporter
     const prometheusExporter = new PrometheusExporter(
@@ -37,28 +47,17 @@ function start(serviceName: string) {
         exportTimeoutMillis: 30000,
     });
 
-    // ✅ Create Meter Provider and register it globally
     const meterProvider = new MeterProvider({ resource });
     meterProvider.addMetricReader(metricReader);
     meterProvider.addMetricReader(prometheusExporter);
     metrics.setGlobalMeterProvider(meterProvider);
-
     const meter = meterProvider.getMeter(serviceName);
 
-    // ✅ Define Application Metrics
     const httpCalls = meter.createHistogram('http_calls', { description: 'Tracks HTTP request duration' });
     const redisCalls = meter.createHistogram('redis_calls', { description: 'Tracks Redis call duration' });
     const errorCount = meter.createCounter('error_count', { description: 'Counts application errors' });
-
-    // Span duration metrics (added for Prometheus)
-    const spanDuration = meter.createHistogram('span_duration_seconds', {
-        description: 'Tracks span duration in seconds',
-    });
-
-    // Span error metrics (added for Prometheus)
-    const spanErrorCount = meter.createCounter('span_error_count', {
-        description: 'Counts the number of errors in spans',
-    });
+    const spanDuration = meter.createHistogram('span_duration_seconds', { description: 'Tracks span duration in seconds' });
+    const spanErrorCount = meter.createCounter('span_error_count', { description: 'Counts the number of errors in spans' });
 
     function trackHttpRequest(duration: number, route?: string, status?: number, method?: string) {
         httpCalls.record(duration, { route, status, method });
@@ -72,25 +71,17 @@ function start(serviceName: string) {
         errorCount.add(1, { method, route });
     }
 
-    // Function to track span duration
     function trackSpanDuration(spanName: string, duration: number) {
         spanDuration.record(duration, { span_name: spanName });
     }
 
-    // Function to track span errors
     function trackSpanError(spanName: string, error: Error) {
         spanErrorCount.add(1, { span_name: spanName, error_message: error.message });
     }
 
-    // ✅ Trace Exporter
-    const traceExporter = new OTLPTraceExporter({
-        url: 'http://collector:4318/v1/traces',  // gRPC endpoint of your collector (without SSL)
-      });
-      
-    // ✅ Span Processor
+    const traceExporter = new OTLPTraceExporter({ url: 'http://collector:4318/v1/traces' });
     const spanProcessor = new BatchSpanProcessor(traceExporter);
 
-    // ✅ OpenTelemetry SDK Configuration
     const sdk = new NodeSDK({
         resource,
         instrumentations: [
@@ -114,7 +105,6 @@ function start(serviceName: string) {
         }),
     });
 
-    // ✅ Start SDK with error handling in try-catch block
     try {
         sdk.start();
         console.log('OpenTelemetry SDK started successfully');
@@ -122,7 +112,13 @@ function start(serviceName: string) {
         console.error('Error starting OpenTelemetry SDK:', error);
     }
 
-    // Return metrics tracking functions
+    // ✅ Stop Pyroscope on App Shutdown
+    process.on('SIGINT', () => {
+        console.log('Shutting down Pyroscope...');
+        pyroscope.stop();
+        process.exit(0);
+    });
+
     return { meter, trackHttpRequest, trackRedisCall, trackError, trackSpanDuration, trackSpanError };
 }
 

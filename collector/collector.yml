@@ -36,9 +36,19 @@ exporters:
       insecure: true  # Disabling TLS (insecure connection)
   # zipkin:
     # endpoint: "http://jaeger:14268/api/traces"  # Jaeger's Zipkin-compatible HTTP endpoint
+  splunk_hec:
+    token: "a0c22679-03ec-4a7a-8923-6bdcaec2bb66"  # Replace with your actual token
+    endpoint: "http://splunk:8188"
+    # username: "admin"
+    # password: "Waheguru@2911"
+    source: "otel-collector"
+    sourcetype: "_json"
+    index: "main"
+    
 
 extensions:
   health_check:
+
 
 service:
   extensions: [health_check]
@@ -51,3 +61,7 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [prometheus]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [splunk_hec]
